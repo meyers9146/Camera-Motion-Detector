@@ -75,10 +75,10 @@ while True:
         
         # Compute the bounding box for the contour and draw it on the frame
         (x, y, w, h) = cv.boundingRect(contour)
-        cv.rectangle(fgmask, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
     
     # Display the resulting frame
-    cv.imshow('frame', fgmask)
+    cv.imshow('frame', frame)
     cv.startWindowThread()
     
     k = cv.waitKey(30) & 0xff
