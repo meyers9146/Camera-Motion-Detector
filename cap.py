@@ -72,29 +72,37 @@ while True:
     contours = cv.findContours(fgmask.copy(), cv.RETR_EXTERNAL,
                                cv.CHAIN_APPROX_SIMPLE)
     
-    # If there is a contour present, then motion was detected
-    # Create video writer object for recording
-    if contours[0] > 0:
-        name = "media/video/" + time.strftime("%d-%m-%Y_%X") + ".avi"
-        fourcc = cv.cv.CV_FOURCC(*"XVID")
-        out = cv.VideoWriter(name, fourcc, getFPS(), (640, 480))
-        
-    # cv2.findContours returns a tuple. The first item in this tuple is our
-    # list of contours. Iterate over the list of contours to process.
+    # Check for false positives and skip them
     for contour in contours[0]:
-        # Ignore false positives
         if cv.contourArea(contour) < args["min_area"]:
             continue
+            
+    # If any contours remain, then motion was detected
+    # Create video writer object for recording
+    if len(contours[0]) > 0:
+        name = "media/video/" + time.strftime("%d-%m-%Y_%X") + ".avi"
+        fourcc = cv.VideoWriter_fourcc("M", "J", "E", "G")
+        out = cv.VideoWriter(name, fourcc, getFPS(), (640, 480))
         
-        # Compute the bounding box for the contour and draw it on the frame
-        (x, y, w, h) = cv.boundingRect(contour)
-        cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        # Include a timestamp
-        cv.putText(frame, datetime.datetime.now().strftime("%A %d %B %Y %I:%M:%S:%p"),
-                   (10, frame.shape[0] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.55, (255, 180, 180), 2)
-        
-        # Capture the video while contours are present
+        # cv2.findContours returns a tuple. The first item in this tuple is our
+        # list of contours. Iterate over the list of contours to process.
+        for contour in contours[0]:
+            # Ignore false positives
+            if cv.contourArea(contour) < args["min_area"]:
+                continue
+            
+            # Compute the bounding box for the contour and draw it on the frame
+            (x, y, w, h) = cv.boundingRect(contour)
+            cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            # Include a timestamp
+            cv.putText(frame, datetime.datetime.now().strftime("%A %d %B %Y %I:%M:%S:%p"),
+                       (10, frame.shape[0] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.55, (255, 180, 180), 2)
+            
+            # Add frame to output recording
+            out.write(frame)
 
+        #If there are no more contours, motion was not detected and the file may close
+        out.release()
     
     # Display the resulting frame
     cv.imshow('frame', frame)
