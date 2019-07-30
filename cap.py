@@ -14,10 +14,14 @@ and Adrian Rosebrock's at https://www.pyimagesearch.com/2015/05/25/basic-motion-
 import numpy as np
 import cv2 as cv
 import argparse
+import _thread
 import time
 import datetime
 import videoCapAsync as VideoCaptureAsync
+import videoCapture as vc
 
+'''
+#TODO: Vestigial block of code. Delete later
 #Function to determine incoming camera fps
 def getFPS(n_frames=500, width=1280, height=720, asynchronous=False): #note: original used "async" which is protected
     if asynchronous:
@@ -36,6 +40,7 @@ def getFPS(n_frames=500, width=1280, height=720, asynchronous=False): #note: ori
     if asynchronous:
         camFeed.stop()
     return int(n_frames / time.time() - t0)
+'''
 
 # cap: the video stream from the local webcam
 # fgbg: the background mask from the local webcam
@@ -72,17 +77,25 @@ while True:
     contours = cv.findContours(fgmask.copy(), cv.RETR_EXTERNAL,
                                cv.CHAIN_APPROX_SIMPLE)
     
+    '''
     # Check for false positives and skip them
     for contour in contours[0]:
         if cv.contourArea(contour) < args["min_area"]:
             continue
-            
+    '''
+        
     # If any contours remain, then motion was detected
     # Create video writer object for recording
     if len(contours[0]) > 0:
+        
+        #Motion found! Record next 10 seconds of video
+        _thread.start_new_thread(vc.videoCapture(), ())
+        
+        '''
         name = "media/video/" + time.strftime("%d-%m-%Y_%X") + ".avi"
         fourcc = cv.VideoWriter_fourcc("M", "J", "E", "G")
         out = cv.VideoWriter(name, fourcc, getFPS(), (640, 480))
+        '''
         
         # cv2.findContours returns a tuple. The first item in this tuple is our
         # list of contours. Iterate over the list of contours to process.
@@ -98,11 +111,13 @@ while True:
             cv.putText(frame, datetime.datetime.now().strftime("%A %d %B %Y %I:%M:%S:%p"),
                        (10, frame.shape[0] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.55, (255, 180, 180), 2)
             
+            '''
             # Add frame to output recording
             out.write(frame)
 
         #If there are no more contours, motion was not detected and the file may close
         out.release()
+            '''
     
     # Display the resulting frame
     cv.imshow('frame', frame)

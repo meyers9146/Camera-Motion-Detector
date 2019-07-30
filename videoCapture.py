@@ -19,19 +19,32 @@ def videoCapture(camera=0, seconds=10):
     # Open VC stream
     vc = cv2.VideoCapture(camera)
     
+    # Get video resolution
+    width = int(vc.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(vc.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    print("Resolution is " + str(width) + "x" + str(height)) #TODO: delete later
+    
     # Create VideoWriter object
-    vid_cod = cv2.VideoWriter_fourcc(*"XVID")
-    output = cv2.VideoWriter("videos/cam_video.mp4", vid_cod, FPS, (640,480))
+    vid_cod = cv2.VideoWriter_fourcc(*"MPEG")
+    output = cv2.VideoWriter("media/video/" + time.strftime("%d-%m-%Y_%X"),
+                             vid_cod, FPS, (width, height))
     
     # Determine the total number of frames to be recorded
     frameCount = seconds * FPS
     
     # Add each frame to output video
-    for frame in frameCount:
+    currentFrame = 0
+    while currentFrame < frameCount:
         ret, frame = vc.read()
+        cv2.imshow("testvideo", frame) #TODO: delete later
         output.write(frame)
+        currentFrame += 1
+        
+    cv2.destroyAllWindows() #TODO: delete later
     
     # Close camera and file
     vc.release()
     output.release()
     
+    # Print on success
+    print("Video created successfully")
