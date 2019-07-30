@@ -16,6 +16,26 @@ import cv2 as cv
 import argparse
 import time
 import datetime
+import videoCapAsync as VideoCaptureAsync
+
+#Function to determine incoming camera fps
+def getFPS(n_frames=500, width=1280, height=720, asynchronous=False): #note: original used "async" which is protected
+    if asynchronous:
+        camFeed = VideoCaptureAsync(0)
+    else:
+        camFeed = cv.VideoCapture(0)
+    camFeed.set(cv.CAP_PROP_FRAME_WIDTH, width)
+    camFeed.set(cv.CAP_PROP_FRAME_HEIGHT, height)
+    if asynchronous:
+        camFeed.start()
+    t0 = time.time()
+    i = 0
+    while i < n_frames:
+        _, frame = cap.read()
+        i += 1
+    if asynchronous:
+        camFeed.stop()
+    return int(n_frames / time.time() - t0)
 
 # cap: the video stream from the local webcam
 # fgbg: the background mask from the local webcam
@@ -34,6 +54,7 @@ args = vars(ap.parse_args())
 if not cap.isOpened():
     print("Cannot open camera")
     exit()
+    
 
 while True:
     # Capture frame-by-frame
@@ -50,6 +71,14 @@ while True:
     # Grab contours from masked image
     contours = cv.findContours(fgmask.copy(), cv.RETR_EXTERNAL,
                                cv.CHAIN_APPROX_SIMPLE)
+    
+    # If there is a contour present, then motion was detected
+    # Create video writer object for recording
+    if contours[0] > 0:
+        name = "media/video/" + time.strftime("%d-%m-%Y_%X") + ".avi"
+        fourcc = cv.cv.CV_FOURCC(*"XVID")
+        out = cv.VideoWriter(name, fourcc, getFPS(), (640, 480))
+        
     # cv2.findContours returns a tuple. The first item in this tuple is our
     # list of contours. Iterate over the list of contours to process.
     for contour in contours[0]:
@@ -63,6 +92,9 @@ while True:
         # Include a timestamp
         cv.putText(frame, datetime.datetime.now().strftime("%A %d %B %Y %I:%M:%S:%p"),
                    (10, frame.shape[0] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.55, (255, 180, 180), 2)
+        
+        # Capture the video while contours are present
+
     
     # Display the resulting frame
     cv.imshow('frame', frame)
@@ -75,5 +107,5 @@ while True:
         break
 
 # When everything done, release the capture
-cap.release()
 cv.destroyAllWindows()
+cap.release()
