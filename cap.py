@@ -89,7 +89,7 @@ while True:
     if len(contours[0]) > 0:
         
         #Motion found! Record next 10 seconds of video
-        _thread.start_new_thread(vc.videoCapture(), ())
+        #_thread.start_new_thread(vc.videoCapture(), ())
         
         '''
         name = "media/video/" + time.strftime("%d-%m-%Y_%X") + ".avi"
@@ -111,6 +111,12 @@ while True:
             cv.putText(frame, datetime.datetime.now().strftime("%A %d %B %Y %I:%M:%S:%p"),
                        (10, frame.shape[0] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.55, (255, 180, 180), 2)
             
+            #Write image to file
+            if True == cv.imwrite("media/images/" + 
+                                  datetime.datetime.now().strftime(
+                                          "%A %d %B %Y %I:%M:%S:%p" + ".jpg"), frame):
+                pass
+            else: print("Failed to write image to disk")
             '''
             # Add frame to output recording
             out.write(frame)

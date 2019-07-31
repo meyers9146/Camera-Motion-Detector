@@ -10,6 +10,7 @@ Create a VideoCapture thread and capture a segment of video from webcam
 
 import time
 import datetime
+import numpy as np
 import cv2
 
 def videoCapture(camera=0, seconds=10):
@@ -25,9 +26,9 @@ def videoCapture(camera=0, seconds=10):
     print("Resolution is " + str(width) + "x" + str(height)) #TODO: delete later
     
     # Create VideoWriter object
-    vid_cod = cv2.VideoWriter_fourcc(*"MPEG")
-    output = cv2.VideoWriter("media/video/" + time.strftime("%d-%m-%Y_%X"),
-                             vid_cod, FPS, (width, height))
+    vid_cod = cv2.VideoWriter_fourcc(*"XVID")
+    output = cv2.VideoWriter("media/video/" + time.strftime("%d-%m-%Y_%X" + ".avi"),
+                             vid_cod, FPS, (width, height), True)
     
     # Determine the total number of frames to be recorded
     frameCount = seconds * FPS
@@ -36,15 +37,17 @@ def videoCapture(camera=0, seconds=10):
     currentFrame = 0
     while currentFrame < frameCount:
         ret, frame = vc.read()
-        cv2.imshow("testvideo", frame) #TODO: delete later
+        #cv2.imshow("testvideo", frame) #TODO: delete later
         output.write(frame)
         currentFrame += 1
         
-    cv2.destroyAllWindows() #TODO: delete later
     
     # Close camera and file
     vc.release()
     output.release()
-    
+    cv2.destroyAllWindows() #TODO: delete later
+
     # Print on success
     print("Video created successfully")
+
+videoCapture()
