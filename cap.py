@@ -10,16 +10,19 @@ and Adrian Rosebrock's at https://www.pyimagesearch.com/2015/05/25/basic-motion-
 
 @author: Mike Meyers
 """
-
-import numpy as np
-import cv2 as cv
 import argparse
+import cv2 as cv
+import ffmpeg
+import numpy as np
 import os
 import _thread
 import time
 import datetime
 import videoCapAsync as VideoCaptureAsync
 import videoCapture as vc
+
+global j
+j = 1
 
 '''
 #TODO: Vestigial block of code. Delete later
@@ -77,13 +80,6 @@ while True:
     # Grab contours from masked image
     contours = cv.findContours(fgmask.copy(), cv.RETR_EXTERNAL,
                                cv.CHAIN_APPROX_SIMPLE)
-    
-    '''
-    # Check for false positives and skip them
-    for contour in contours[0]:
-        if cv.contourArea(contour) < args["min_area"]:
-            continue
-    '''
         
     # If any contours remain, then motion was detected
     # Create video writer object for recording
@@ -96,6 +92,7 @@ while True:
         writeToFolder = datetime.datetime.now().strftime("%Y_%B_%d_%H:%M")
         try:
             os.mkdir("media/images/" + writeToFolder)
+            os.mkdir("media/videos/" + writeToFolder)
         except:
             pass
         
@@ -121,6 +118,15 @@ while True:
             else: print("Failed to write image to disk")
         
         #TODO: this is where the ffmpeg call will go
+        # Cal ffmpeg to string the images together into a video file
+        try:
+            if True == ffmpeg.trans_img("media/images/" + writeToFolder + "/00000.jpg",
+                             "media/videos/" + writeToFolder,
+                             writeToFolder + j + ".avi",
+                             "jpg"):
+                j += 1
+            else: print("Failed to write video to disk: ffmpeg returned False")
+        except: print("Failed to write video to disk: Exception thrown")
             
     # Display the resulting frame
     cv.imshow('frame', frame)
