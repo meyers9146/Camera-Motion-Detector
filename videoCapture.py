@@ -26,18 +26,20 @@ def videoCapture(camera=0, seconds=10):
     print("Resolution is " + str(width) + "x" + str(height)) #TODO: delete later
     
     # Create VideoWriter object
-    vid_cod = cv2.VideoWriter_fourcc(*"XVID")
-    output = cv2.VideoWriter("media/video/" + time.strftime("%d-%m-%Y_%X" + ".avi"),
-                             vid_cod, FPS, (width, height), True)
-    
+    try:
+        vid_cod = cv2.VideoWriter_fourcc('m','p','4','v')
+        output = cv2.VideoWriter("media/videos/" + datetime.datetime.now().strftime("%Y_%B_%d_%H%M") + ".mov",
+                                 vid_cod, FPS, (width, height), True)
+        print("Video created successfully")
+    except: print("Video file not created successfully")
+        
     # Determine the total number of frames to be recorded
     frameCount = seconds * FPS
-    
+   
     # Add each frame to output video
     currentFrame = 0
     while currentFrame < frameCount:
         ret, frame = vc.read()
-        #cv2.imshow("testvideo", frame) #TODO: delete later
         output.write(frame)
         currentFrame += 1
         
@@ -48,6 +50,4 @@ def videoCapture(camera=0, seconds=10):
     cv2.destroyAllWindows() #TODO: delete later
 
     # Print on success
-    print("Video created successfully")
-
-videoCapture()
+    #print("Video created successfully")
