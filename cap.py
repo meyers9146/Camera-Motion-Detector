@@ -12,26 +12,16 @@ and Adrian Rosebrock's at https://www.pyimagesearch.com/2015/05/25/basic-motion-
 """
 import argparse
 import cv2 as cv
-import ffmpeg
+import datetime
 import numpy as np
 import os
-import _thread
 import time
-import datetime
-import videoCapAsync as VideoCaptureAsync
 from videoCapture import videoCapture
 
-global j
-j = 1
-
-
-#TODO: Vestigial block of code. Delete later
+#TODO: Vestigial block of code. Delete later if never used
 #Function to determine incoming camera fps
 def getFPS(n_frames=500, width=1280, height=720, asynchronous=False): #note: original used "async" which is protected
-    if asynchronous:
-        camFeed = VideoCaptureAsync(0)
-    else:
-        camFeed = cv.VideoCapture(0)
+    camFeed = cv.VideoCapture(0)
     camFeed.set(cv.CAP_PROP_FRAME_WIDTH, width)
     camFeed.set(cv.CAP_PROP_FRAME_HEIGHT, height)
     if asynchronous:
@@ -64,7 +54,8 @@ if not cap.isOpened():
     print("Cannot open camera")
     exit()
     
-
+# Main portion of the code. Open camera and read input for motion.
+# If motion is detected, record it and mark it on the camera feed
 while True:
     # Capture frame-by-frame
     ret, frame = cap.read()
@@ -84,9 +75,6 @@ while True:
     # If any contours are created, then motion was detected
     if len(contours[0]) > 0:
         
-        # Motion found! Start counter for i at 0
-        i = 0
-        
         # Call videoCapture to capture next 10 seconds of video
         print(videoCapture)
         v = videoCapture()
@@ -95,7 +83,6 @@ while True:
         # Create destination folder for recording
         writeToFolder = datetime.datetime.now().strftime("%Y_%B_%d_%H%M")
         try:
-            os.mkdir("media/images/" + writeToFolder)
             os.mkdir("media/videos/" + writeToFolder)
         except:
             pass
@@ -114,32 +101,6 @@ while True:
             cv.putText(frame, datetime.datetime.now().strftime("%A %d %B %Y %I:%M:%S:%p"),
                        (10, frame.shape[0] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.55, (255, 180, 180), 2)
      
-            '''
-            # Write image to file. cv2.imwrite() will return True if successful
-            if True == cv.imwrite("media/images/" 
-                                  + writeToFolder + "/" 
-                                  + "{0:05d}".format(i) + ".jpg", frame):
-                i += 1 # increment i for next frame
-            else: print("Failed to write image to disk")
-        
-        # Call ffmpeg to string the images together into a video file
-    try:
-        ''
-        if True == ffmpeg.trans_img("media/images/" + writeToFolder + "/00000.jpg",
-                         "media/videos/" + writeToFolder,
-                         writeToFolder + j + ".avi",
-                         "jpg"):
-        ''
-        cmd = ("ffmpeg -framerate " + str(getFPS) + " -i " + "%05d.jpg" 
-        + writeToFolder + ".avi")
-        
-        j += 1 # Use global variable j to ensure unique video file names
-        print("Video file created successfully")
-        
-        #else: print("Failed to write video to disk: ffmpeg returned False")
-    except: print("Failed to write video to disk: Exception thrown")
-        '''
-            
     # Display the resulting frame
     cv.imshow('frame', frame)
     cv.imshow('contour', fgmask)
