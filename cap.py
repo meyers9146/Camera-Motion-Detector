@@ -19,12 +19,12 @@ import _thread
 import time
 import datetime
 import videoCapAsync as VideoCaptureAsync
-import videoCapture as vc
+from videoCapture import videoCapture
 
 global j
 j = 1
 
-'''
+
 #TODO: Vestigial block of code. Delete later
 #Function to determine incoming camera fps
 def getFPS(n_frames=500, width=1280, height=720, asynchronous=False): #note: original used "async" which is protected
@@ -44,7 +44,7 @@ def getFPS(n_frames=500, width=1280, height=720, asynchronous=False): #note: ori
     if asynchronous:
         camFeed.stop()
     return int(n_frames / time.time() - t0)
-'''
+
 
 # cap: the video stream from the local webcam
 # fgbg: the background mask from the local webcam
@@ -81,15 +81,19 @@ while True:
     contours = cv.findContours(fgmask.copy(), cv.RETR_EXTERNAL,
                                cv.CHAIN_APPROX_SIMPLE)
         
-    # If any contours remain, then motion was detected
-    # Create video writer object for recording
+    # If any contours are created, then motion was detected
     if len(contours[0]) > 0:
         
         # Motion found! Start counter for i at 0
         i = 0
         
+        # Call videoCapture to capture next 10 seconds of video
+        print(videoCapture)
+        v = videoCapture()
+        v.capture()
+        
         # Create destination folder for recording
-        writeToFolder = datetime.datetime.now().strftime("%Y_%B_%d_%H:%M")
+        writeToFolder = datetime.datetime.now().strftime("%Y_%B_%d_%H%M")
         try:
             os.mkdir("media/images/" + writeToFolder)
             os.mkdir("media/videos/" + writeToFolder)
@@ -109,7 +113,8 @@ while True:
             # Include a timestamp
             cv.putText(frame, datetime.datetime.now().strftime("%A %d %B %Y %I:%M:%S:%p"),
                        (10, frame.shape[0] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.55, (255, 180, 180), 2)
-            
+     
+            '''
             # Write image to file. cv2.imwrite() will return True if successful
             if True == cv.imwrite("media/images/" 
                                   + writeToFolder + "/" 
@@ -117,16 +122,23 @@ while True:
                 i += 1 # increment i for next frame
             else: print("Failed to write image to disk")
         
-        #TODO: this is where the ffmpeg call will go
-        # Cal ffmpeg to string the images together into a video file
-        try:
-            if True == ffmpeg.trans_img("media/images/" + writeToFolder + "/00000.jpg",
-                             "media/videos/" + writeToFolder,
-                             writeToFolder + j + ".avi",
-                             "jpg"):
-                j += 1
-            else: print("Failed to write video to disk: ffmpeg returned False")
-        except: print("Failed to write video to disk: Exception thrown")
+        # Call ffmpeg to string the images together into a video file
+    try:
+        ''
+        if True == ffmpeg.trans_img("media/images/" + writeToFolder + "/00000.jpg",
+                         "media/videos/" + writeToFolder,
+                         writeToFolder + j + ".avi",
+                         "jpg"):
+        ''
+        cmd = ("ffmpeg -framerate " + str(getFPS) + " -i " + "%05d.jpg" 
+        + writeToFolder + ".avi")
+        
+        j += 1 # Use global variable j to ensure unique video file names
+        print("Video file created successfully")
+        
+        #else: print("Failed to write video to disk: ffmpeg returned False")
+    except: print("Failed to write video to disk: Exception thrown")
+        '''
             
     # Display the resulting frame
     cv.imshow('frame', frame)
