@@ -14,6 +14,7 @@ and Adrian Rosebrock's at https://www.pyimagesearch.com/2015/05/25/basic-motion-
 import numpy as np
 import cv2 as cv
 import argparse
+import os
 import _thread
 import time
 import datetime
@@ -88,14 +89,15 @@ while True:
     # Create video writer object for recording
     if len(contours[0]) > 0:
         
-        #Motion found! Record next 10 seconds of video
-        #_thread.start_new_thread(vc.videoCapture(), ())
+        # Motion found! Start counter for i at 0
+        i = 0
         
-        '''
-        name = "media/video/" + time.strftime("%d-%m-%Y_%X") + ".avi"
-        fourcc = cv.VideoWriter_fourcc("M", "J", "E", "G")
-        out = cv.VideoWriter(name, fourcc, getFPS(), (640, 480))
-        '''
+        # Create destination folder for recording
+        writeToFolder = datetime.datetime.now().strftime("%Y_%B_%d_%H:%M")
+        try:
+            os.mkdir("media/images/" + writeToFolder)
+        except:
+            pass
         
         # cv2.findContours returns a tuple. The first item in this tuple is our
         # list of contours. Iterate over the list of contours to process.
@@ -111,20 +113,15 @@ while True:
             cv.putText(frame, datetime.datetime.now().strftime("%A %d %B %Y %I:%M:%S:%p"),
                        (10, frame.shape[0] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.55, (255, 180, 180), 2)
             
-            #Write image to file
-            if True == cv.imwrite("media/images/" + 
-                                  datetime.datetime.now().strftime(
-                                          "%A %d %B %Y %I:%M:%S:%p" + ".jpg"), frame):
-                pass
+            # Write image to file. cv2.imwrite() will return True if successful
+            if True == cv.imwrite("media/images/" 
+                                  + writeToFolder + "/" 
+                                  + "{0:05d}".format(i) + ".jpg", frame):
+                i += 1 # increment i for next frame
             else: print("Failed to write image to disk")
-            '''
-            # Add frame to output recording
-            out.write(frame)
-
-        #If there are no more contours, motion was not detected and the file may close
-        out.release()
-            '''
-    
+        
+        #TODO: this is where the ffmpeg call will go
+            
     # Display the resulting frame
     cv.imshow('frame', frame)
     cv.imshow('contour', fgmask)
