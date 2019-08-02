@@ -17,53 +17,69 @@ import time
 import datetime
 import numpy as np
 import cv2
+import traceback
 
 class videoCapture:
     def __init__(self):
         pass
     
     def capture(self, camera=0):
-        count = 1
         global count
+        count = 1
         running = False
-                
+        
+        # capture.start() will open the video camera and start recording        
         def start(self):
-            FPS = 20.0 #Frames Per Second: change for higher or lower frame rate
-            
-            # Open VC stream
-            vc = cv2.VideoCapture(camera)
-            
-            # Get video resolution
-            width = int(vc.get(cv2.CAP_PROP_FRAME_WIDTH))
-            height = int(vc.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            print("Resolution is " + str(width) + "x" + str(height)) #TODO: delete later
-            
-            # Create VideoWriter object
             try:
-                vid_cod = cv2.VideoWriter_fourcc('m','p','4','v')
-                self.output = cv2.VideoWriter("media/videos/" + datetime.datetime.now().strftime("%Y_%B_%d_%H%M") + ".mov",
-                                         vid_cod, FPS, (width, height), True)
-                print("Video created successfully")
-            except: print("Video file not created successfully")
+                FPS = 20.0 #Frames Per Second: change for higher or lower frame rate
                 
-           
-            # Add each frame to output video
-            self.currentFrame = 0
-            
-            self.running = True
+                # Open VC stream
+                self.vc = cv2.VideoCapture(camera)
+                
+                # Get video resolution
+                width = int(self.vc.get(cv2.CAP_PROP_FRAME_WIDTH))
+                height = int(self.vc.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                print("Resolution is " + str(width) + "x" + str(height)) #TODO: delete later
+                
+                # Create VideoWriter object
+                try:
+                    vid_cod = cv2.VideoWriter_fourcc('m','p','4','v')
+                    self.output = cv2.VideoWriter("media/videos/"
+                                          + datetime.datetime.now().strftime("%Y_%B_%d_%H%M")
+                                            + "_" + count + ".mov",
+                                             vid_cod, FPS, (width, height), True)
+                    print("Video created successfully")
+                except: print("Video file not created successfully: "
+                              + traceback.format_exc(4))
+                    
+               
+                # Add each frame to output video
+                self.currentFrame = 0
+                
+                self.running = True
+                print("Started recording")
+            except:
+                print("Failed to start recording")
         
         while running == True:
             ret, frame = self.vc.read()
             self.output.write(frame)
             self.currentFrame += 1
-            def stopCapture(self):
+            
+            # capture.stop() will stop an active capture
+            def stop(self):
                 self.running = False
             
         
         # Close camera and file
-        self.vc.release()
-        self.output.release()
-        cv2.destroyAllWindows() #TODO: delete later
+        try:
+            self.vc.release()
+            self.output.release()
+            cv2.destroyAllWindows() #TODO: delete later
+            print("Recording stopped successfully")
+        except:
+            print("Failed to stop recording: "
+                  + traceback.format_exc(4))
     
         # Print on success
         #print("Video created successfully")
