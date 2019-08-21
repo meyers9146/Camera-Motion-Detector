@@ -15,8 +15,8 @@ import cv2 as cv
 import datetime
 import numpy as np
 import os
-import threading
 import time
+import traceback
 from videoCapture import videoCapture
 
 #TODO: Vestigial block of code. Delete later if never used
@@ -76,6 +76,8 @@ while True:
     # If any contours are created, then motion was detected
     if len(contours[0]) > 0:
         
+        #TODO: vestigial code
+        '''
         # Call videoCapture to capture next 10 seconds of video
         print(videoCapture)
         v = videoCapture()
@@ -83,13 +85,47 @@ while True:
         # Record video in separate thread
         t1 = threading.Thread(target = v.start())
         t1.start()
+        '''
         
+        #TODO: vestigial code
+        '''
         # Create destination folder for recording
         writeToFolder = datetime.datetime.now().strftime("%Y_%B_%d_%H%M")
+        count = 1
         try:
             os.mkdir("media/videos/" + writeToFolder)
         except:
             pass
+        '''
+        
+        count = 1
+        try:
+            FPS = 20.0 #Frames Per Second: change for higher or lower frame rate
+        
+            # Get video resolution
+            width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+            print("Resolution is " + str(width) + "x" + str(height)) #TODO: delete later
+            
+            # Create VideoWriter object
+            try:
+                vid_cod = cv.VideoWriter_fourcc('m','p','4','v')
+                output = cv.VideoWriter("media/videos/"
+                                      + datetime.datetime.now().strftime("%Y_%B_%d_%H%M")
+                                        + "_" + str(count) + ".mov",
+                                         vid_cod, FPS, (width, height), True)
+                print("Video created successfully")
+            except: print("Video file not created successfully: "
+                          + traceback.format_exc(4))
+                
+           
+            # Add each frame to output video
+            currentFrame = 0
+            
+            running = True
+            print("Started recording")
+        except:
+            print("Failed to start recording")
         
         # cv2.findContours returns a tuple. The first item in this tuple is our
         # list of contours. Iterate over the list of contours to process.
@@ -104,9 +140,13 @@ while True:
             # Include a timestamp
             cv.putText(frame, datetime.datetime.now().strftime("%A %d %B %Y %I:%M:%S:%p"),
                        (10, frame.shape[0] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.55, (255, 180, 180), 2)
+            output.write(frame)
     
+        '''
         # When contours hits zero, stop recording 
         v.stop()
+        '''
+        output.release()
         
     
     # Display the resulting frame

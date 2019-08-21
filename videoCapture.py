@@ -67,8 +67,10 @@ class videoCapture:
             self.output.write(frame)
             currentFrame += 1
             if q.full() == True:
-                q.get()
+                first_frame = q.get()
             q.put(frame)
+            
+        
             
         
         print("Stopped recording")
