@@ -15,6 +15,7 @@ import cv2 as cv
 import datetime
 import numpy as np
 import os
+import threading
 import time
 from videoCapture import videoCapture
 
@@ -78,7 +79,10 @@ while True:
         # Call videoCapture to capture next 10 seconds of video
         print(videoCapture)
         v = videoCapture()
-        v.capture()
+        
+        # Record video in separate thread
+        t1 = threading.Thread(target = v.start())
+        t1.start()
         
         # Create destination folder for recording
         writeToFolder = datetime.datetime.now().strftime("%Y_%B_%d_%H%M")
@@ -100,7 +104,11 @@ while True:
             # Include a timestamp
             cv.putText(frame, datetime.datetime.now().strftime("%A %d %B %Y %I:%M:%S:%p"),
                        (10, frame.shape[0] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.55, (255, 180, 180), 2)
-     
+    
+        # When contours hits zero, stop recording 
+        v.stop()
+        
+    
     # Display the resulting frame
     cv.imshow('frame', frame)
     cv.imshow('contour', fgmask)

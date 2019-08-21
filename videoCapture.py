@@ -17,6 +17,7 @@ import time
 import datetime
 import numpy as np
 import cv2
+import queue
 import threading
 import traceback
 
@@ -56,6 +57,7 @@ class videoCapture:
             currentFrame = 0
             
             self.running = True
+            q = queue.queue(50)
             print("Started recording")
         except:
             print("Failed to start recording")
@@ -64,6 +66,13 @@ class videoCapture:
             ret, frame = self.vc.read()
             self.output.write(frame)
             currentFrame += 1
+            if q.full() == True:
+                q.get()
+            q.put(frame)
+            
+        
+        print("Stopped recording")
+        self.stop()
             
     # capture.stop() will stop an active capture
     def stop(self):
