@@ -140,13 +140,16 @@ while True:
             # Include a timestamp
             cv.putText(frame, datetime.datetime.now().strftime("%A %d %B %Y %I:%M:%S:%p"),
                        (10, frame.shape[0] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.55, (255, 180, 180), 2)
-            output.write(frame)
+        
+        output.write(frame)
+        currentFrame += 1
     
         '''
         # When contours hits zero, stop recording 
         v.stop()
         '''
-        output.release()
+        #TODO: this may be in the wrong spot
+        #output.release()
         
     
     # Display the resulting frame
@@ -160,5 +163,6 @@ while True:
         break
 
 # When everything done, release the capture
+output.release()
 cv.destroyAllWindows()
 cap.release()
