@@ -54,6 +54,36 @@ args = vars(ap.parse_args())
 if not cap.isOpened():
     print("Cannot open camera")
     exit()
+output = cv.VideoWriter()
+    
+# Open videoWriter object for writing
+FPS = 30 #Frames Per Second: change for higher or lower frame rate
+try:
+    # Get video resolution
+    width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+    count = 1
+    print("Resolution is " + str(width) + "x" + str(height)) #TODO: delete later
+    
+    # Create VideoWriter object
+    try:
+        vid_cod = cv.VideoWriter_fourcc('m','p','4','v')
+        output = cv.VideoWriter("media/videos/"
+                              + datetime.datetime.now().strftime("%Y_%B_%d_%H%M")
+                                + "_" + str(count) + ".mov",
+                                 vid_cod, FPS, (width, height), True)
+        print("Video created successfully")
+    except: print("Video file not created successfully: "
+                  + traceback.format_exc(4))
+        
+   
+    # Add each frame to output video
+    currentFrame = 0
+    
+    running = True
+    print("Started recording")
+except:
+    print("Failed to start recording")
     
 # Main portion of the code. Open camera and read input for motion.
 # If motion is detected, record it and mark it on the camera feed
@@ -72,9 +102,11 @@ while True:
     # Grab contours from masked image
     contours = cv.findContours(fgmask.copy(), cv.RETR_EXTERNAL,
                                cv.CHAIN_APPROX_SIMPLE)
+    hasContours = False
         
     # If any contours are created, then motion was detected
     if len(contours[0]) > 0:
+        hasContours = True
         
         #TODO: vestigial code
         '''
@@ -97,11 +129,8 @@ while True:
         except:
             pass
         '''
-        
-        count = 1
+        # Open videoWriter object for recording
         try:
-            FPS = 20.0 #Frames Per Second: change for higher or lower frame rate
-        
             # Get video resolution
             width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
             height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
@@ -109,18 +138,16 @@ while True:
             
             # Create VideoWriter object
             try:
-                vid_cod = cv.VideoWriter_fourcc('m','p','4','v')
-                output = cv.VideoWriter("media/videos/"
-                                      + datetime.datetime.now().strftime("%Y_%B_%d_%H%M")
-                                        + "_" + str(count) + ".mov",
-                                         vid_cod, FPS, (width, height), True)
-                print("Video created successfully")
+                if not output.isOpened():
+                    vid_cod = cv.VideoWriter_fourcc('m','p','4','v')
+                    output = cv.VideoWriter("media/videos/"
+                                          + datetime.datetime.now().strftime("%Y_%B_%d_%H%M")
+                                            + "_" + str(count) + ".mov",
+                                             vid_cod, FPS, (width, height), True)
+                    currentFrame = 0
+                    print("Video created successfully")
             except: print("Video file not created successfully: "
                           + traceback.format_exc(4))
-                
-           
-            # Add each frame to output video
-            currentFrame = 0
             
             running = True
             print("Started recording")
@@ -141,15 +168,18 @@ while True:
             cv.putText(frame, datetime.datetime.now().strftime("%A %d %B %Y %I:%M:%S:%p"),
                        (10, frame.shape[0] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.55, (255, 180, 180), 2)
         
+    if hasContours:
         output.write(frame)
         currentFrame += 1
-    
-        '''
-        # When contours hits zero, stop recording 
-        v.stop()
-        '''
-        #TODO: this may be in the wrong spot
-        #output.release()
+    else:
+        output.release()
+
+    '''
+    # When contours hits zero, stop recording 
+    v.stop()
+    '''
+    #TODO: this may be in the wrong spot
+    #output.release()
         
     
     # Display the resulting frame
