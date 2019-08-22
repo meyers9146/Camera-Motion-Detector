@@ -57,7 +57,7 @@ if not cap.isOpened():
 output = cv.VideoWriter()
     
 # Open videoWriter object for writing
-FPS = 30 #Frames Per Second: change for higher or lower frame rate
+FPS = 15 #Frames Per Second: change for higher or lower frame rate
 try:
     # Get video resolution
     width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
@@ -98,11 +98,18 @@ while True:
     
     # Create background mask by subtracting non-moving pixels from frame
     fgmask = fgbg.apply(frame)
+    black = np.zeros((height, width, 3), np.uint8) # black frame for comparison
+    
     
     # Grab contours from masked image
     contours = cv.findContours(fgmask.copy(), cv.RETR_EXTERNAL,
                                cv.CHAIN_APPROX_SIMPLE)
     hasContours = False
+    
+    #TODO: if fgmask == black, break output?
+    if np.array_equal(contours[0], black):
+        print("No motion detected. Releasing video output")
+        output.release()
         
     # If any contours are created, then motion was detected
     if len(contours[0]) > 0:
@@ -134,7 +141,6 @@ while True:
             # Get video resolution
             width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
             height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
-            print("Resolution is " + str(width) + "x" + str(height)) #TODO: delete later
             
             # Create VideoWriter object
             try:
